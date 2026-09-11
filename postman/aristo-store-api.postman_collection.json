@@ -1,0 +1,58 @@
+{
+  "info": {
+    "_postman_id": "9b12a86c-48be-401d-b8d4-fa061405e608",
+    "name": "Aristo Store API",
+    "description": "Organized by public, customer, and admin flows.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {"name":"Public","item":[
+      {"name":"Get Categories","request":{"method":"GET","header":[],"url":"{{baseUrl}}/categories"}},
+      {"name":"Get Category by ID","request":{"method":"GET","header":[],"url":"{{baseUrl}}/categories/{{categoryId}}"}},
+      {"name":"Get Products","request":{"method":"GET","header":[],"url":"{{baseUrl}}/products?page=1&limit=10&sortBy=createdAt&order=DESC"}},
+      {"name":"Get Product by ID","request":{"method":"GET","header":[],"url":"{{baseUrl}}/products/{{productId}}"}},
+      {"name":"Get Product by Slug","request":{"method":"GET","header":[],"url":"{{baseUrl}}/products/slug/luxury-shea-body-butter"}}
+    ]},
+    {"name":"Auth","item":[
+      {"name":"Register Customer","event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Status is 201', () => pm.response.to.have.status(201));","const data = pm.response.json();","pm.expect(data).to.have.property('accessToken');","pm.expect(data.user).not.to.have.property('password');"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"New Customer\",\n  \"email\": \"customer@example.com\",\n  \"password\": \"CustomerPassword123!\"\n}"},"url":"{{baseUrl}}/auth/register"}},
+      {"name":"Login Customer","event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Status is 200', () => pm.response.to.have.status(200));","const data = pm.response.json();","pm.environment.set('customerToken', data.accessToken);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"email\": \"sara@example.com\",\n  \"password\": \"CustomerPassword123!\"\n}"},"url":"{{baseUrl}}/auth/login"}},
+      {"name":"Login Admin","event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Status is 200', () => pm.response.to.have.status(200));","const data = pm.response.json();","pm.environment.set('adminToken', data.accessToken);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"email\": \"admin@aristo.com\",\n  \"password\": \"AdminPassword123!\"\n}"},"url":"{{baseUrl}}/auth/login"}},
+      {"name":"Get Auth Profile","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{customerToken}}"}],"url":"{{baseUrl}}/auth/profile"}}
+    ]},
+    {"name":"Customer","item":[
+      {"name":"Profile","item":[
+        {"name":"Get My Profile","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{customerToken}}"}],"url":"{{baseUrl}}/users/me"}},
+        {"name":"Update My Profile","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{customerToken}}"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"Customer Name\"\n}"},"url":"{{baseUrl}}/users/me"}}
+      ]},
+      {"name":"Cart","item":[
+        {"name":"Get Cart","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{customerToken}}"}],"url":"{{baseUrl}}/cart"}},
+        {"name":"Add Cart Item","event":[{"listen":"test","script":{"type":"text/javascript","exec":["const data = pm.response.json();","if (data.items && data.items.length) pm.environment.set('cartItemId', data.items[0].id);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{customerToken}}"}],"body":{"mode":"raw","raw":"{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 2\n}"},"url":"{{baseUrl}}/cart/items"}},
+        {"name":"Update Cart Item Quantity","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{customerToken}}"}],"body":{"mode":"raw","raw":"{\n  \"quantity\": 3\n}"},"url":"{{baseUrl}}/cart/items/{{cartItemId}}"}}
+      ]},
+      {"name":"Addresses","item":[
+        {"name":"Get Addresses","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{customerToken}}"}],"url":"{{baseUrl}}/addresses"}},
+        {"name":"Create Address","event":[{"listen":"test","script":{"type":"text/javascript","exec":["const data = pm.response.json();","if (data.id) pm.environment.set('addressId', data.id);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{customerToken}}"}],"body":{"mode":"raw","raw":"{\n  \"fullName\": \"Sara Ahmad\",\n  \"phone\": \"0590000000\",\n  \"city\": \"Hebron\",\n  \"street\": \"Al Ain Street\",\n  \"building\": \"12\",\n  \"notes\": \"Second floor\",\n  \"isDefault\": true\n}"},"url":"{{baseUrl}}/addresses"}}
+      ]},
+      {"name":"Orders","item":[
+        {"name":"Checkout","event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Status is 201', () => pm.response.to.have.status(201));","const data = pm.response.json();","if (data.id) pm.environment.set('orderId', data.id);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{customerToken}}"}],"body":{"mode":"raw","raw":"{\n  \"addressId\": \"{{addressId}}\",\n  \"paymentMethod\": \"cash_on_delivery\"\n}"},"url":"{{baseUrl}}/orders/checkout"}},
+        {"name":"Get My Orders","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{customerToken}}"}],"url":"{{baseUrl}}/orders/my-orders"}},
+        {"name":"Get My Order by ID","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{customerToken}}"}],"url":"{{baseUrl}}/orders/my-orders/{{orderId}}"}}
+      ]}
+    ]},
+    {"name":"Admin","item":[
+      {"name":"Dashboard","item":[{"name":"Get Dashboard Overview","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"}],"url":"{{baseUrl}}/admin/dashboard"}}]},
+      {"name":"Categories","item":[
+        {"name":"Create Category","event":[{"listen":"test","script":{"type":"text/javascript","exec":["const data = pm.response.json();","if (data.id) pm.environment.set('categoryId', data.id);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{adminToken}}"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"Body Care\",\n  \"description\": \"Body scrubs and lotions\",\n  \"imageUrl\": \"https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500\"\n}"},"url":"{{baseUrl}}/categories"}},
+        {"name":"Update Category","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{adminToken}}"}],"body":{"mode":"raw","raw":"{\n  \"description\": \"Updated body care description\"\n}"},"url":"{{baseUrl}}/categories/{{categoryId}}"}}
+      ]},
+      {"name":"Products","item":[
+        {"name":"Create Product","event":[{"listen":"test","script":{"type":"text/javascript","exec":["const data = pm.response.json();","if (data.id) pm.environment.set('productId', data.id);"]}}],"request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{adminToken}}"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"Luxury Shea Body Butter\",\n  \"slug\": \"luxury-shea-body-butter\",\n  \"description\": \"Deeply hydrating raw shea body butter\",\n  \"price\": 22,\n  \"stock\": 30,\n  \"imageUrl\": \"https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500\",\n  \"categoryId\": \"{{categoryId}}\"\n}"},"url":"{{baseUrl}}/products"}}
+      ]},
+      {"name":"Users","item":[{"name":"Get All Users","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"}],"url":"{{baseUrl}}/users?page=1&limit=10"}}]},
+      {"name":"Orders","item":[
+        {"name":"Get All Orders","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"}],"url":"{{baseUrl}}/orders"}},
+        {"name":"Update Order Status","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{adminToken}}"}],"body":{"mode":"raw","raw":"{\n  \"status\": \"processing\"\n}"},"url":"{{baseUrl}}/orders/{{orderId}}/status"}}
+      ]}
+    ]}
+  ]
+}
