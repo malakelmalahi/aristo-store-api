@@ -40,25 +40,33 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USERNAME', 'postgres'),
-        password: configService.get<string>('DB_PASSWORD', 'postgres'),
-        database: configService.get<string>('DB_NAME', 'aristo_store_db'),
-        entities: [
-          User,
-          Category,
-          Product,
-          Cart,
-          CartItem,
-          Address,
-          Order,
-          OrderItem,
-        ],
-        synchronize: true, // Development only
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+
+        return {
+          type: 'postgres' as const,
+          ...(databaseUrl
+            ? { url: databaseUrl }
+            : {
+                host: configService.get<string>('DB_HOST', 'localhost'),
+                port: configService.get<number>('DB_PORT', 5432),
+                username: configService.get<string>('DB_USERNAME', 'postgres'),
+                password: configService.get<string>('DB_PASSWORD', 'postgres'),
+                database: configService.get<string>('DB_NAME', 'aristo_store_db'),
+              }),
+          entities: [
+            User,
+            Category,
+            Product,
+            Cart,
+            CartItem,
+            Address,
+            Order,
+            OrderItem,
+          ],
+          synchronize: true, // Development only
+        };
+      },
     }),
     UsersModule,
     AuthModule,
