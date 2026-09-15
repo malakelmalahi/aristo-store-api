@@ -41,7 +41,9 @@ import { ThrottlerGuard } from '@nestjs/throttler';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const databaseUrl =
+          configService.get<string>('DATABASE_URL') ||
+          configService.get<string>('RENDER_DATABASE_URL');
 
         return {
           type: 'postgres' as const,

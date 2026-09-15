@@ -13,7 +13,7 @@ import { UserRole } from '../common/enums/user-role.enum';
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL || process.env.RENDER_DATABASE_URL;
 
 const AppDataSource = new DataSource({
   type: 'postgres',
